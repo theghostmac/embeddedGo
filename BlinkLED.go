@@ -1,17 +1,28 @@
 package main
-//here, I made use of tinyGo
+//done with Gobot.io
 import (
-	"machine"
-	"time"
+        "time"
+
+        "gobot.io/x/gobot"
+        "gobot.io/x/gobot/drivers/gpio"
+        "gobot.io/x/gobot/platforms/firmata"
 )
 
 func main() {
-	led := machine.D13
-	led.Configure(machine.PinConfig{Mode: machine.PinOutput})
-	for {
-		led.High()
-		time.Sleep(time.Millisecond * 1000)
-		led.Low()
-		time.Sleep(time.Millisecond * 1000)
-	}
+        firmataAdaptor := firmata.NewAdaptor("COM3")
+        led := gpio.NewLedDriver(firmataAdaptor, "13")
+
+        work := func() {
+                gobot.Every(1*time.Second, func() {
+                        led.Toggle()
+                })
+        }
+
+        robot := gobot.NewRobot("bot",
+                []gobot.Connection{firmataAdaptor},
+                []gobot.Device{led},
+                work,
+        )
+
+        robot.Start()
 }
